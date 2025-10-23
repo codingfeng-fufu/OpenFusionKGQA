@@ -1,0 +1,19 @@
+# GraphRAG v2 依赖包
+
+# 核心依赖
+pydantic>=2.0.0  # 配置和数据模型
+pyyaml>=6.0  # YAML 配置文件解析
+python-dotenv>=1.0.0  # 环境变量管理
+
+# 阶段2：数据模型
+pandas>=2.0.0  # 数据处理
+pyarrow>=12.0.0  # Parquet 文件支持
+
+# 阶段3：索引 Pipeline
+tiktoken>=0.5.0  # Token 计算
+networkx>=3.0  # 图处理
+
+# 后续阶段会添加的依赖
+# openai>=1.0.0  # OpenAI API
+# graspologic>=3.0  # 社区检测（可选，我们使用 networkx 的算法）
+

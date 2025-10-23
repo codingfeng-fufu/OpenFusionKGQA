@@ -1,0 +1,9 @@
+__pycache__/ 
+*.pyc 
+venv/ 
+.idea/ 
+.vscode/ 
+results/ 
+data/ 
+*.pkl 
+*.log 
