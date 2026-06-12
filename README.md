@@ -330,7 +330,6 @@ Do not commit:
 .env*
 settings.local.*
 artifacts/
-graphrag_v2/artifacts/
 local logs
 API keys
 Neo4j data volumes

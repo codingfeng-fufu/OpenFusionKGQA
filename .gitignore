@@ -40,7 +40,6 @@ settings.local.*.yml
 settings.local.*.json
 
 /artifacts/
-/graphrag_v2/artifacts/
 /output/
 /cache/
 /.cache/
