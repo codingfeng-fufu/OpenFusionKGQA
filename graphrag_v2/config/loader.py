@@ -10,6 +10,16 @@ from typing import Any
 import yaml
 from dotenv import load_dotenv
 
+from graphrag_v2.config.defaults import (
+    DEFAULT_CHAT_MODEL,
+    DEFAULT_CHAT_MODEL_ID,
+    DEFAULT_CHAT_MODEL_TYPE,
+    DEFAULT_EMBEDDING_MODEL,
+    DEFAULT_EMBEDDING_MODEL_ID,
+    DEFAULT_EMBEDDING_MODEL_TYPE,
+    DEFAULT_MODEL_PROVIDER,
+)
+from graphrag_v2.config.enums import AuthType
 from graphrag_v2.config.models.graph_rag_config import GraphRagConfig
 
 
@@ -81,6 +91,38 @@ def _apply_env_overrides(config_dict: dict[str, Any]) -> dict[str, Any]:
     Returns:
         应用环境变量后的配置字典
     """
+    # 兼容旧配置键名
+    if "storage" in config_dict and "output" not in config_dict:
+        config_dict["output"] = config_dict["storage"]
+
+    if "llm" in config_dict and "models" not in config_dict:
+        config_dict["models"] = {
+            DEFAULT_CHAT_MODEL_ID: {
+                "type": DEFAULT_CHAT_MODEL_TYPE,
+                "model": DEFAULT_CHAT_MODEL,
+                "model_provider": DEFAULT_MODEL_PROVIDER,
+                "auth_type": AuthType.APIKey,
+            },
+            DEFAULT_EMBEDDING_MODEL_ID: {
+                "type": DEFAULT_EMBEDDING_MODEL_TYPE,
+                "model": DEFAULT_EMBEDDING_MODEL,
+                "model_provider": DEFAULT_MODEL_PROVIDER,
+                "auth_type": AuthType.APIKey,
+            },
+            **config_dict["llm"].get("models", {}),
+        }
+
+    if "embeddings" in config_dict and "models" not in config_dict:
+        config_dict["models"] = config_dict["embeddings"].get("models", {})
+
+    entity_extraction = config_dict.get("entity_extraction")
+    if isinstance(entity_extraction, dict) and "max_gleanings" in entity_extraction:
+        config_dict.setdefault("extraction", {})
+        config_dict["extraction"].setdefault(
+            "max_gleanings",
+            entity_extraction["max_gleanings"],
+        )
+
     # 覆盖根目录
     if "GRAPHRAG_ROOT_DIR" in os.environ:
         config_dict["root_dir"] = os.environ["GRAPHRAG_ROOT_DIR"]
@@ -106,6 +148,19 @@ def _apply_env_overrides(config_dict: dict[str, Any]) -> dict[str, Any]:
             config_dict["models"]["default_embedding_model"]["api_key"] = os.environ[
                 "GRAPHRAG_EMBEDDING_API_KEY"
             ]
+
+    graph_store_env = {
+        "NEO4J_URI": "uri",
+        "NEO4J_USERNAME": "username",
+        "NEO4J_DATABASE": "database",
+        "NEO4J_PASSWORD_ENV": "password_env",
+    }
+    if any(name in os.environ for name in graph_store_env):
+        config_dict.setdefault("graph_store", {})
+        for env_name, field_name in graph_store_env.items():
+            value = os.environ.get(env_name)
+            if value:
+                config_dict["graph_store"][field_name] = value
     
     return config_dict
 
@@ -139,4 +194,3 @@ def create_default_config(output_path: str | Path | None = None) -> GraphRagConf
                 )
     
     return config
-

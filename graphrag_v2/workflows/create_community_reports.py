@@ -43,7 +43,7 @@ async def run_workflow(
             'id', 'community_id', 'title', 'summary', 
             'full_content', 'rank', 'findings'
         ])
-        context.storage.set("community_reports", empty_df)
+        await context.output_storage.set("community_reports", empty_df)
         return WorkflowFunctionOutput(result=empty_df)
     
     logger.info(f"开始为 {len(communities)} 个社区生成报告")
@@ -315,4 +315,3 @@ def calculate_community_rank(
     )
     
     return rank
-

@@ -22,7 +22,7 @@ class CommunityContextBuilder(GlobalContextBuilder):
     
     def __init__(
         self,
-        community_reports: pd.DataFrame,
+        community_reports: pd.DataFrame | list,
         max_tokens: int = 8000,
         batch_size: int = 5,
     ):
@@ -33,7 +33,11 @@ class CommunityContextBuilder(GlobalContextBuilder):
             max_tokens: 每批最大 tokens 数
             batch_size: 每批最大报告数
         """
-        self.community_reports = community_reports
+        self.community_reports = (
+            community_reports
+            if isinstance(community_reports, pd.DataFrame)
+            else pd.DataFrame([vars(report) for report in community_reports])
+        )
         self.max_tokens = max_tokens
         self.batch_size = batch_size
     
@@ -119,4 +123,3 @@ class CommunityContextBuilder(GlobalContextBuilder):
 **关键发现**:
 {report.get('findings', 'N/A')}
 """
-

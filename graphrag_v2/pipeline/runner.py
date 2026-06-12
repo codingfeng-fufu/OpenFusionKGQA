@@ -151,3 +151,22 @@ async def run_pipeline(
     logger.info(f"Pipeline 运行完成，总耗时: {context.stats.total_runtime:.2f}秒")
     logger.info(f"统计信息: {context.stats}")
 
+
+class PipelineRunner:
+    """Small compatibility wrapper around ``run_pipeline``."""
+
+    def __init__(
+        self,
+        pipeline: Pipeline,
+        config: GraphRagConfig | None = None,
+        context: PipelineRunContext | None = None,
+    ):
+        self.pipeline = pipeline
+        self.config = config or GraphRagConfig()
+        self.context = context or create_run_context(
+            input_storage=PipelineStorage(base_dir=self.config.input.base_dir),
+            output_storage=PipelineStorage(base_dir=self.config.output.base_dir),
+        )
+
+    def run(self) -> AsyncIterable[PipelineRunResult]:
+        return run_pipeline(self.pipeline, self.config, self.context)

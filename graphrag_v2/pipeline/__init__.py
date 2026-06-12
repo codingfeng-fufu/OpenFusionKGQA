@@ -12,14 +12,16 @@ from graphrag_v2.pipeline.context import (
 )
 from graphrag_v2.pipeline.factory import PipelineFactory
 from graphrag_v2.pipeline.pipeline import Pipeline
-from graphrag_v2.pipeline.runner import PipelineRunResult, create_run_context, run_pipeline
+from graphrag_v2.pipeline.runner import (
+    PipelineRunResult,
+    PipelineRunner,
+    create_run_context,
+    run_pipeline,
+)
 from graphrag_v2.pipeline.workflow import Workflow, WorkflowFunction, WorkflowFunctionOutput
 
 # 便捷函数
 create_pipeline = PipelineFactory.create_pipeline
-
-# 别名以保持向后兼容
-PipelineRunner = run_pipeline
 
 __all__ = [
     "Pipeline",
@@ -38,4 +40,3 @@ __all__ = [
     "PipelineStorage",
     "WorkflowCallbacks",
 ]
-

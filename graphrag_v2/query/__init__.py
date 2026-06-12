@@ -1,4 +1,4 @@
-"""GraphRAG v2 查询模块。"""
+"""Legacy GraphRAG-style query prototypes for OpenFusionKGQA."""
 
 from graphrag_v2.query.base import BaseSearch, SearchResult
 from graphrag_v2.query.context_builder import (
@@ -25,4 +25,3 @@ __all__ = [
     "EntityRelationshipContextBuilder",
     "LocalSearch",
 ]
-

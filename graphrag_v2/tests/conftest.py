@@ -3,11 +3,17 @@ Pytest 配置文件
 
 定义共享的 fixtures 和测试配置。
 """
-import pytest
-import tempfile
+import os
 import shutil
+import tempfile
 from pathlib import Path
 from typing import Generator
+
+import pytest
+
+# Keep native thread pools small in pytest and inherited CLI subprocesses.
+# This avoids intermittent pyarrow/pandas shutdown aborts in full-suite runs.
+os.environ["OMP_NUM_THREADS"] = "1"
 
 from graphrag_v2.config import GraphRagConfig, create_default_config
 from graphrag_v2.data_model import Document, Entity, Relationship, Community
@@ -140,4 +146,3 @@ def chinese_text() -> str:
 深度学习是机器学习的一个子领域，它使用神经网络来学习数据的表示。
 OpenAI 是一家专注于人工智能研究的公司，开发了 GPT 系列模型。
 """
-

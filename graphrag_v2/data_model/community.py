@@ -65,6 +65,40 @@ class Community(Named):
     period: str | None = None
     """社区时间段（可选）。"""
 
+    def __init__(
+        self,
+        id: str = "",
+        short_id: str | None = None,
+        title: str = "",
+        level: str | int = "0",
+        parent: str | None = None,
+        children: list[str] | None = None,
+        entity_ids: list[str] | None = None,
+        relationship_ids: list[str] | None = None,
+        text_unit_ids: list[str] | None = None,
+        covariate_ids: dict[str, list[str]] | None = None,
+        attributes: dict[str, Any] | None = None,
+        size: int | None = None,
+        period: str | None = None,
+        entities: list[str] | None = None,
+        relationships: list[str] | None = None,
+    ):
+        self.id = id
+        self.short_id = short_id
+        self.title = title
+        self.level = level
+        self.parent = parent
+        self.children = children
+        self.entity_ids = entity_ids if entity_ids is not None else entities
+        self.relationship_ids = (
+            relationship_ids if relationship_ids is not None else relationships
+        )
+        self.text_unit_ids = text_unit_ids
+        self.covariate_ids = covariate_ids
+        self.attributes = attributes
+        self.size = size
+        self.period = period
+
     @property
     def entities(self) -> list[str] | None:
         """实体列表（entity_ids的别名，用于向后兼容）。"""
@@ -139,4 +173,3 @@ class Community(Named):
             size=d.get(size_key),
             period=d.get(period_key),
         )
-

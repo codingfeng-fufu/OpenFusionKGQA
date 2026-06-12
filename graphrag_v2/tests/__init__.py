@@ -1,6 +1,5 @@
 """
-GraphRAG v2 测试套件
+OpenFusionKGQA 测试套件
 
-这个包包含了 GraphRAG v2 的所有测试。
+这个包包含了 OpenFusionKGQA 的所有测试。
 """
-

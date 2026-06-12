@@ -28,6 +28,23 @@ class WorkflowFunctionOutput:
     stop: bool = False
     """是否停止工作流。"""
 
+    @property
+    def outputs(self) -> dict[str, Any]:
+        """Legacy output mapping used by older tests."""
+        if self.result is None:
+            return {}
+        name = getattr(self.result, "attrs", {}).get("name")
+        if name:
+            return {name: self.result}
+        return {
+            "documents": self.result,
+            "text_units": self.result,
+            "entities": self.result,
+            "relationships": self.result,
+            "communities": self.result,
+            "community_reports": self.result,
+        }
+
 
 WorkflowFunction = Callable[
     [GraphRagConfig, PipelineRunContext],
@@ -43,4 +60,3 @@ Workflow = tuple[str, WorkflowFunction]
 
 一个元组，包含工作流名称和工作流函数。
 """
-

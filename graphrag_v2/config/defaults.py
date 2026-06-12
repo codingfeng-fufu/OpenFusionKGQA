@@ -19,13 +19,13 @@ from graphrag_v2.config.enums import (
 DEFAULT_OUTPUT_BASE_DIR = "output"
 DEFAULT_CHAT_MODEL_ID = "default_chat_model"
 DEFAULT_CHAT_MODEL_TYPE = ModelType.Chat
-DEFAULT_CHAT_MODEL = "gpt-4o-mini"
+DEFAULT_CHAT_MODEL = "deepseek-v4-flash"
 DEFAULT_CHAT_MODEL_AUTH_TYPE = AuthType.APIKey
 DEFAULT_EMBEDDING_MODEL_ID = "default_embedding_model"
 DEFAULT_EMBEDDING_MODEL_TYPE = ModelType.Embedding
 DEFAULT_EMBEDDING_MODEL = "text-embedding-3-small"
 DEFAULT_EMBEDDING_MODEL_AUTH_TYPE = AuthType.APIKey
-DEFAULT_MODEL_PROVIDER = "openai"
+DEFAULT_MODEL_PROVIDER = "deepseek"
 
 ENCODING_MODEL = "cl100k_base"
 
@@ -180,4 +180,3 @@ def create_default_config():
     config = GraphRagConfig()
 
     return config
-

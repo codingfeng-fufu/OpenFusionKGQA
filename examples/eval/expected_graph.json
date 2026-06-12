@@ -1,0 +1,44 @@
+{
+  "required_entities": [
+    {
+      "name": "GraphRAG",
+      "aliases": ["graph rag"]
+    },
+    {
+      "name": "Knowledge Graph",
+      "aliases": ["knowledge graphs"]
+    },
+    {
+      "name": "Neo4j",
+      "aliases": ["neo4j graph database"]
+    }
+  ],
+  "required_relationships": [
+    {
+      "source": {
+        "name": "GraphRAG"
+      },
+      "relation": {
+        "name": "uses",
+        "aliases": ["combines", "uses_knowledge_graph"]
+      },
+      "target": {
+        "name": "Knowledge Graph",
+        "aliases": ["knowledge graphs"]
+      }
+    },
+    {
+      "source": {
+        "name": "Neo4j"
+      },
+      "relation": {
+        "name": "stores",
+        "aliases": ["store", "used_to_store"]
+      },
+      "target": {
+        "name": "Knowledge Graph",
+        "aliases": ["entities and relationships", "entities", "relationships", "knowledge graphs"]
+      }
+    }
+  ]
+}

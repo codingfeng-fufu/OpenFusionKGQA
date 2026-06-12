@@ -61,6 +61,7 @@ class GlobalSearch(BaseSearch):
         concurrent_coroutines: int = 32,
         llm_params: dict[str, Any] | None = None,
         context_builder_params: dict[str, Any] | None = None,
+        llm_client: Any | None = None,
     ):
         """初始化 Global Search。
         
@@ -77,6 +78,7 @@ class GlobalSearch(BaseSearch):
             context_builder_params: 上下文构建器参数
         """
         super().__init__(llm_params, context_builder_params)
+        self.llm_client = llm_client
         self.context_builder = context_builder
         self.map_system_prompt = map_system_prompt or self._default_map_prompt()
         self.reduce_system_prompt = reduce_system_prompt or self._default_reduce_prompt()
@@ -255,4 +257,3 @@ class GlobalSearch(BaseSearch):
         # 简化版本：直接返回完整结果
         result = await self.search(query, **kwargs)
         yield result.response
-

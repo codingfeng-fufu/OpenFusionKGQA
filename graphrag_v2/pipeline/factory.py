@@ -67,6 +67,7 @@ class PipelineFactory:
         cls,
         config: GraphRagConfig,
         method: IndexingMethod | str = IndexingMethod.Standard,
+        workflows: list[WorkflowFunction] | list[str] | None = None,
     ) -> Pipeline:
         """创建 Pipeline。
         
@@ -78,17 +79,24 @@ class PipelineFactory:
             Pipeline 实例
         """
         # 获取工作流列表
-        workflows = config.workflows or cls.pipelines.get(method, [])
+        workflow_items = workflows or config.workflows or cls.pipelines.get(method, [])
         
-        logger.info(f"创建 Pipeline，方法: {method}, 工作流: {workflows}")
+        logger.info(f"创建 Pipeline，方法: {method}, 工作流: {workflow_items}")
         
         # 创建工作流元组列表
         workflow_tuples = []
-        for name in workflows:
-            if name not in cls.workflows:
+        for item in workflow_items:
+            if isinstance(item, str):
+                name = item
+                workflow_fn = cls.workflows.get(name)
+            else:
+                workflow_fn = item
+                name = getattr(item, "__name__", "workflow")
+
+            if workflow_fn is None:
                 logger.warning(f"工作流 {name} 未注册，跳过")
                 continue
-            workflow_tuples.append((name, cls.workflows[name]))
+            workflow_tuples.append((name, workflow_fn))
         
         return Pipeline(workflow_tuples)
 
@@ -121,4 +129,3 @@ _standard_workflows = [
 ]
 
 PipelineFactory.register_pipeline(IndexingMethod.Standard, _standard_workflows)
-

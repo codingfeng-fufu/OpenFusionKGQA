@@ -200,13 +200,17 @@ class PipelineRunContext:
         state: 运行时状态（任意属性包）
     """
 
-    stats: PipelineRunStats
+    stats: PipelineRunStats = field(default_factory=PipelineRunStats)
     """运行统计信息。"""
 
-    input_storage: PipelineStorage
+    input_storage: PipelineStorage = field(
+        default_factory=lambda: PipelineStorage(base_dir="input")
+    )
     """输入文档存储。"""
 
-    output_storage: PipelineStorage
+    output_storage: PipelineStorage = field(
+        default_factory=lambda: PipelineStorage(base_dir="output")
+    )
     """输出数据存储。"""
 
     previous_storage: PipelineStorage | None = None
@@ -221,3 +225,34 @@ class PipelineRunContext:
     state: PipelineState = field(default_factory=dict)
     """运行时状态。"""
 
+    def __init__(
+        self,
+        stats: PipelineRunStats | None = None,
+        input_storage: PipelineStorage | None = None,
+        output_storage: PipelineStorage | None = None,
+        previous_storage: PipelineStorage | None = None,
+        cache: PipelineCache | None = None,
+        callbacks: WorkflowCallbacks | None = None,
+        state: PipelineState | None = None,
+        storage: PipelineStorage | None = None,
+    ):
+        """Create a run context, accepting the legacy ``storage`` alias."""
+        resolved_input = input_storage or storage or PipelineStorage(base_dir="input")
+        resolved_output = storage or output_storage or PipelineStorage(base_dir="output")
+
+        self.stats = stats or PipelineRunStats()
+        self.input_storage = resolved_input
+        self.output_storage = resolved_output
+        self.previous_storage = previous_storage
+        self.cache = cache or PipelineCache()
+        self.callbacks = callbacks or WorkflowCallbacks()
+        self.state = state or {}
+
+    @property
+    def storage(self) -> PipelineStorage:
+        """Legacy alias for output storage."""
+        return self.output_storage
+
+    @storage.setter
+    def storage(self, value: PipelineStorage) -> None:
+        self.output_storage = value

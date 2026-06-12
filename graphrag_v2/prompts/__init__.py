@@ -1,4 +1,4 @@
-"""GraphRAG v2 Prompt 模块。"""
+"""OpenFusionKGQA prompt module."""
 
 from graphrag_v2.prompts.base import PromptLibrary, PromptTemplate
 from graphrag_v2.prompts.community_report import get_community_report_prompt
@@ -30,4 +30,3 @@ __all__ = [
     "create_global_search_reduce_prompt",
     "create_local_search_prompt",
 ]
-

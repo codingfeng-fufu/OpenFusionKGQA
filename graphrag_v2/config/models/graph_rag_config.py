@@ -20,6 +20,10 @@ from graphrag_v2.config.defaults import (
 from graphrag_v2.config.enums import AuthType
 from graphrag_v2.config.models.cache_config import CacheConfig
 from graphrag_v2.config.models.chunking_config import ChunkingConfig
+from graphrag_v2.config.models.community_config import CommunityConfig
+from graphrag_v2.config.models.extraction_config import ExtractionConfig
+from graphrag_v2.config.models.fusion_config import FusionConfig
+from graphrag_v2.config.models.graph_store_config import GraphStoreConfig
 from graphrag_v2.config.models.input_config import InputConfig
 from graphrag_v2.config.models.language_model_config import LanguageModelConfig
 from graphrag_v2.config.models.storage_config import StorageConfig
@@ -42,7 +46,9 @@ class GraphRagConfig(BaseModel):
         data["storage"] = data.get("output")
         data["llm"] = {"models": data.get("models", {})}
         data["embeddings"] = {"models": data.get("models", {})}
-        data["entity_extraction"] = {"max_gleanings": 1}
+        data["entity_extraction"] = {
+            "max_gleanings": data.get("extraction", {}).get("max_gleanings", 1)
+        }
         return data
 
     # ========== 基础配置 ==========
@@ -88,6 +94,30 @@ class GraphRagConfig(BaseModel):
         default_factory=CacheConfig,
     )
 
+    # ========== 图存储配置 ==========
+    graph_store: GraphStoreConfig = Field(
+        description="图存储配置",
+        default_factory=GraphStoreConfig,
+    )
+
+    # ========== 社区检测配置 ==========
+    community: CommunityConfig = Field(
+        description="社区检测和报告配置",
+        default_factory=CommunityConfig,
+    )
+
+    # ========== 知识抽取配置 ==========
+    extraction: ExtractionConfig = Field(
+        description="知识抽取配置",
+        default_factory=ExtractionConfig,
+    )
+
+    # ========== 图融合配置 ==========
+    fusion: FusionConfig = Field(
+        description="图融合配置",
+        default_factory=FusionConfig,
+    )
+
     # ========== 文本分块配置 ==========
     chunks: ChunkingConfig = Field(
         description="文本分块配置",
@@ -104,17 +134,12 @@ class GraphRagConfig(BaseModel):
     def _validate_root_dir(self) -> None:
         """验证根目录。
         
-        确保根目录存在且是一个有效的目录。
+        仅归一化为绝对路径，不强制要求目录已存在。
         """
         if self.root_dir.strip() == "":
             self.root_dir = str(Path.cwd())
 
-        root_dir = Path(self.root_dir).resolve()
-        if not root_dir.is_dir():
-            raise FileNotFoundError(
-                f"无效的根目录: {self.root_dir} 不是一个目录"
-            )
-        self.root_dir = str(root_dir)
+        self.root_dir = str(Path(self.root_dir).resolve())
 
     def _validate_models(self) -> None:
         """验证模型配置。
@@ -231,7 +256,7 @@ class GraphRagConfig(BaseModel):
     @property
     def entity_extraction(self) -> "EntityExtractionConfigWrapper":
         """实体提取配置的包装器（向后兼容）。"""
-        return EntityExtractionConfigWrapper()
+        return EntityExtractionConfigWrapper(self.extraction.max_gleanings)
 
     class Config:
         """Pydantic 配置。"""
@@ -256,6 +281,5 @@ class EmbeddingsConfigWrapper:
 class EntityExtractionConfigWrapper:
     """实体提取配置包装器，提供向后兼容的接口。"""
 
-    def __init__(self):
-        self.max_gleanings = 1  # 默认值
-
+    def __init__(self, max_gleanings: int = 1):
+        self.max_gleanings = max_gleanings

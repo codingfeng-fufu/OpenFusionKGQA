@@ -62,6 +62,7 @@ async def run_workflow(
     
     # 转换为 DataFrame
     df = pd.DataFrame(documents)
+    df.attrs["name"] = "documents"
     
     # 保存到输出存储
     await context.output_storage.set("documents", df)
@@ -71,4 +72,3 @@ async def run_workflow(
     
     logger.info(f"工作流完成: load_documents (加载了 {len(df)} 个文档)")
     return WorkflowFunctionOutput(result=df)
-

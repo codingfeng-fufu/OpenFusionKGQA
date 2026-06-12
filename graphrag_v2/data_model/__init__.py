@@ -1,4 +1,4 @@
-"""GraphRAG v2 数据模型。
+"""OpenFusionKGQA data models.
 
 定义了 GraphRAG 系统中使用的所有核心数据结构。
 
@@ -35,4 +35,3 @@ __all__ = [
     "Document",
     "Covariate",
 ]
-

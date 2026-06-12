@@ -1,0 +1,37 @@
+services:
+  neo4j:
+    image: neo4j:5-community
+    environment:
+      NEO4J_AUTH: neo4j/kgqa-local-password
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "cypher-shell -u neo4j -p kgqa-local-password 'RETURN 1'",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  kgqa:
+    build: .
+    image: openfusion-kgqa:0.2.0-beta.1
+    working_dir: /workspace
+    entrypoint: ["kgqa"]
+    environment:
+      NEO4J_PASSWORD: kgqa-local-password
+    volumes:
+      - .:/workspace
+    depends_on:
+      neo4j:
+        condition: service_healthy
+
+volumes:
+  neo4j-data:
+  neo4j-logs:

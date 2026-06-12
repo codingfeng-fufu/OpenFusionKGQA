@@ -1,0 +1,2 @@
+Neo4j is a graph database used to store entities and relationships.
+In this project, Neo4j is the production graph store while JSON remains useful for offline demos.

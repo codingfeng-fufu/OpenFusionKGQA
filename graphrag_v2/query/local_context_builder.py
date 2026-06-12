@@ -23,10 +23,11 @@ class EntityRelationshipContextBuilder(LocalContextBuilder):
     
     def __init__(
         self,
-        entities: pd.DataFrame,
-        relationships: pd.DataFrame,
-        community_reports: pd.DataFrame,
-        entity_embeddings: pd.DataFrame,
+        entities: pd.DataFrame | list,
+        relationships: pd.DataFrame | list,
+        community_reports: pd.DataFrame | list,
+        entity_embeddings: pd.DataFrame | None = None,
+        communities: pd.DataFrame | list | None = None,
         text_unit_embeddings: pd.DataFrame | None = None,
         top_k_entities: int = 20,
         top_k_relationships: int = 50,
@@ -44,14 +45,41 @@ class EntityRelationshipContextBuilder(LocalContextBuilder):
             top_k_relationships: 检索的最相关关系数
             max_tokens: 最大 tokens 数
         """
-        self.entities = entities
-        self.relationships = relationships
-        self.community_reports = community_reports
-        self.entity_embeddings = entity_embeddings
+        self.entities = self._to_dataframe(entities)
+        self.relationships = self._to_dataframe(relationships)
+        self.community_reports = self._to_dataframe(community_reports)
+        self.communities = self._to_dataframe(communities or [])
+        self.entity_embeddings = (
+            entity_embeddings
+            if entity_embeddings is not None
+            else self._build_default_entity_embeddings(self.entities)
+        )
         self.text_unit_embeddings = text_unit_embeddings
         self.top_k_entities = top_k_entities
         self.top_k_relationships = top_k_relationships
         self.max_tokens = max_tokens
+
+    def _to_dataframe(self, value: pd.DataFrame | list) -> pd.DataFrame:
+        if isinstance(value, pd.DataFrame):
+            df = value.copy()
+        else:
+            df = pd.DataFrame([vars(item) for item in value])
+
+        if "name" not in df.columns and "title" in df.columns:
+            df["name"] = df["title"]
+        if "title" not in df.columns and "name" in df.columns:
+            df["title"] = df["name"]
+        return df
+
+    def _build_default_entity_embeddings(self, entities: pd.DataFrame) -> pd.DataFrame:
+        rows = []
+        for _, entity in entities.iterrows():
+            name = entity.get("name", entity.get("title", ""))
+            embedding = entity.get("description_embedding")
+            if embedding is None:
+                embedding = self._generate_query_embedding(name).tolist()
+            rows.append({"name": name, "embedding": embedding})
+        return pd.DataFrame(rows)
     
     def build_context(
         self,
@@ -263,4 +291,3 @@ class EntityRelationshipContextBuilder(LocalContextBuilder):
             return 0.0
         
         return float(dot_product / (norm1 * norm2))
-

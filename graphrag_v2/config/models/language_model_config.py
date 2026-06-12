@@ -129,6 +129,24 @@ class LanguageModelConfig(BaseModel):
         default=language_model_defaults.model_supports_json,
     )
 
+    supports_guided_json: bool | None = Field(
+        description=(
+            "Whether this chat endpoint supports vLLM-style guided_json. "
+            "If unset, provider defaults are used."
+        ),
+        default=None,
+    )
+
+    prompt_token_cost_per_1k: float | None = Field(
+        description="Prompt token cost per 1K tokens. Used only for estimates.",
+        default=None,
+    )
+
+    completion_token_cost_per_1k: float | None = Field(
+        description="Completion token cost per 1K tokens. Used only for estimates.",
+        default=None,
+    )
+
     # ========== 验证方法 ==========
     def _validate_model_name(self) -> None:
         """验证模型名称。
@@ -187,6 +205,15 @@ class LanguageModelConfig(BaseModel):
         if self.max_retries < 1:
             raise ValueError("max_retries 必须大于等于 1")
 
+    def _validate_costs(self) -> None:
+        """Validate optional token pricing."""
+        for value, name in [
+            (self.prompt_token_cost_per_1k, "prompt_token_cost_per_1k"),
+            (self.completion_token_cost_per_1k, "completion_token_cost_per_1k"),
+        ]:
+            if value is not None and value < 0:
+                raise ValueError(f"{name} must be greater than or equal to 0")
+
     @model_validator(mode="after")
     def _validate_model(self):
         """模型级别的验证。
@@ -199,9 +226,9 @@ class LanguageModelConfig(BaseModel):
         self._validate_tokens_per_minute()
         self._validate_requests_per_minute()
         self._validate_max_retries()
+        self._validate_costs()
         return self
 
     class Config:
         """Pydantic 配置。"""
         use_enum_values = True
-

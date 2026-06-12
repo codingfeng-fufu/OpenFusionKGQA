@@ -1,6 +1,6 @@
-"""GraphRAG v2 配置模块。
+"""OpenFusionKGQA 配置模块。
 
-参考微软 GraphRAG 的配置系统设计，使用 Pydantic 实现类型安全的配置管理。
+使用 Pydantic 实现类型安全的配置管理。
 """
 
 from graphrag_v2.config.enums import (
@@ -13,6 +13,10 @@ from graphrag_v2.config.enums import (
     StorageType,
 )
 from graphrag_v2.config.models.chunking_config import ChunkingConfig
+from graphrag_v2.config.models.community_config import CommunityConfig
+from graphrag_v2.config.models.extraction_config import ExtractionConfig
+from graphrag_v2.config.models.fusion_config import FusionConfig
+from graphrag_v2.config.models.graph_store_config import GraphStoreConfig
 from graphrag_v2.config.models.graph_rag_config import GraphRagConfig
 from graphrag_v2.config.models.language_model_config import LanguageModelConfig
 from graphrag_v2.config.models.storage_config import StorageConfig
@@ -30,6 +34,10 @@ __all__ = [
     "StorageType",
     # Config Models
     "ChunkingConfig",
+    "CommunityConfig",
+    "ExtractionConfig",
+    "FusionConfig",
+    "GraphStoreConfig",
     "GraphRagConfig",
     "LanguageModelConfig",
     "StorageConfig",
@@ -37,4 +45,3 @@ __all__ = [
     "create_default_config",
     "load_config",
 ]
-

@@ -107,6 +107,9 @@ async def run_workflow(
     if documents is None:
         logger.error("未找到文档数据")
         return WorkflowFunctionOutput(result=None, stop=True)
+
+    if not isinstance(documents, pd.DataFrame):
+        documents = pd.DataFrame([vars(document) for document in documents])
     
     # 获取分块配置
     chunk_size = config.chunks.size
@@ -141,6 +144,7 @@ async def run_workflow(
     
     # 转换为 DataFrame
     df = pd.DataFrame(text_units)
+    df.attrs["name"] = "text_units"
     
     # 保存到输出存储
     await context.output_storage.set("text_units", df)
@@ -150,4 +154,3 @@ async def run_workflow(
     
     logger.info(f"工作流完成: create_base_text_units (生成了 {len(df)} 个文本单元)")
     return WorkflowFunctionOutput(result=df)
-

@@ -34,6 +34,7 @@ class LocalSearch(BaseSearch):
         max_tokens: int = 4000,
         llm_params: dict[str, Any] | None = None,
         context_builder_params: dict[str, Any] | None = None,
+        llm_client: Any | None = None,
     ):
         """初始化 Local Search。
         
@@ -46,6 +47,7 @@ class LocalSearch(BaseSearch):
             context_builder_params: 上下文构建器参数
         """
         super().__init__(llm_params, context_builder_params)
+        self.llm_client = llm_client
         self.context_builder = context_builder
         self.system_prompt = system_prompt or self._default_system_prompt()
         self.response_type = response_type
@@ -163,4 +165,3 @@ class LocalSearch(BaseSearch):
         # 简化版本：直接返回完整结果
         result = await self.search(query, **kwargs)
         yield result.response
-

@@ -137,7 +137,7 @@ async def test_query_engines():
 def main():
     """运行所有测试"""
     print("=" * 60)
-    print("GraphRAG v2 核心功能测试")
+    print("OpenFusionKGQA 核心功能测试")
     print("=" * 60)
     
     tests = [
@@ -178,4 +178,3 @@ def main():
 if __name__ == "__main__":
     success = main()
     sys.exit(0 if success else 1)
-

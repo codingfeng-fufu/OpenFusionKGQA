@@ -1,477 +1,304 @@
-# GraphRAG v2
+# graphrag_v2
 
-基于微软 GraphRAG 源码学习和重构的知识图谱增强检索系统。
+`graphrag_v2` 是 OpenFusionKGQA 的历史内部包名。公开项目名是
+OpenFusionKGQA，主实现链路把文档处理、知识抽取、图谱融合、图存储、
+社区报告和图谱问答放在同一条可测试链路里。
 
-## 项目目标
+## Architecture
 
-参考微软开源的 GraphRAG 实现，从零开始构建一个生产级别的 GraphRAG 系统，学习并应用最佳实践。
-
-## 当前进度
-
-- [x] 项目初始化
-- [x] **阶段1：配置系统重构** ✅
-  - [x] 1.1 学习微软的配置模型设计
-  - [x] 1.2 创建基础配置类
-  - [x] 1.3 实现配置加载机制
-  - [x] 1.4 添加配置验证
-  - [x] 1.5 创建默认配置模板
-- [x] **阶段2：数据模型标准化** ✅
-  - [x] 2.1 学习微软的数据模型
-  - [x] 2.2 定义核心数据类
-  - [x] 2.3 定义Schema常量
-  - [x] 2.4 实现数据转换工具
-  - [x] 2.5 添加数据验证
-- [x] **阶段3：索引Pipeline重构（基础版本）** ✅
-  - [x] 3.1 学习微软的Pipeline架构
-  - [x] 3.2 实现Pipeline核心模块
-  - [x] 3.3 实现文档加载工作流
-  - [x] 3.4 实现文本分块工作流
-  - [x] 3.5 实现Pipeline工厂和运行器
-- [x] **阶段3扩展1：实体提取和社区检测** ✅
-  - [x] 3.6 实现实体提取工作流（规则版本）
-  - [x] 3.7 实现社区检测工作流（Louvain算法）
-  - [x] 3.8 创建端到端测试
-- [x] **阶段3扩展2：社区报告和嵌入生成** ✅
-  - [x] 3.9 实现社区报告生成工作流
-  - [x] 3.10 实现文本嵌入生成工作流
-  - [x] 3.11 实现嵌入相似度搜索
-  - [x] 3.12 创建完整Pipeline测试
-- [x] **阶段4：查询引擎优化** ✅
-  - [x] 4.1 学习微软的查询架构
-  - [x] 4.2 实现查询基础模块
-  - [x] 4.3 实现 Global Search
-  - [x] 4.4 实现 Local Search
-  - [x] 4.5 创建查询测试
-- [x] **阶段5：Prompt工程优化** ✅
-  - [x] 5.1 创建 Prompt 模板系统
-  - [x] 5.2 实现实体提取 Prompt
-  - [x] 5.3 实现社区报告 Prompt
-  - [x] 5.4 实现查询 Prompt（Map/Reduce/Local）
-  - [x] 5.5 集成 GLM API
-  - [x] 5.6 创建端到端测试
-- [/] **阶段6：测试与文档** ⏳ **接近完成**
-  - [x] 6.1 创建测试基础设施（Pytest + Fixtures）
-  - [x] 6.2 创建单元测试套件（91个测试）
-  - [x] 6.3 创建集成测试
-  - [x] 6.4 修复核心模块测试（**80%通过率** 🎉）
-    - [x] Prompt 模块 100% 通过
-    - [x] LLM 模块 100% 通过
-    - [x] Data Model 模块 100% 通过
-    - [/] Config 模块 29% 通过（待修复）
-  - [ ] 6.5 编写 API 文档
-  - [ ] 6.6 创建部署指南
-  - [ ] 6.7 性能优化和基准测试
-
-## 项目结构
-
+```text
+Documents
+  -> document loader / chunker
+  -> extraction explorer
+  -> graph fusion supervisor
+  -> graph store
+  -> community detection / reports
+  -> graph-grounded QA
 ```
+
+主要模块：
+
+```text
 graphrag_v2/
-├── config/                    # 配置模块
-│   ├── models/               # 配置数据模型
-│   ├── defaults.py           # 默认配置
-│   └── loader.py             # 配置加载器
-├── data_model/               # 数据模型
-├── pipeline/                 # Pipeline 模块
-│   ├── context.py            # Pipeline 上下文
-│   ├── runner.py             # Pipeline 运行器
-│   └── factory.py            # Pipeline 工厂
-├── workflows/                # 工作流模块
-│   ├── load_documents.py    # 文档加载
-│   ├── create_base_text_units.py  # 文本分块
-│   ├── extract_graph.py      # 实体提取
-│   ├── create_communities.py # 社区检测
-│   ├── create_community_reports.py  # 社区报告
-│   └── generate_embeddings.py  # 嵌入生成
-├── query/                    # 查询模块
-│   ├── base.py               # 查询基类
-│   ├── context_builder.py    # 上下文构建器
-│   ├── global_search.py      # Global Search
-│   └── local_search.py       # Local Search
-├── prompts/                  # Prompt 模板
-│   ├── base.py               # 模板基类
-│   ├── entity_extraction.py  # 实体提取 Prompt
-│   ├── community_report.py   # 社区报告 Prompt
-│   └── query_prompts.py      # 查询 Prompt
-├── llm/                      # LLM 模块
-│   └── glm_client.py         # GLM 客户端
-├── storage/                  # 存储模块
-├── utils/                    # 工具函数
-└── tests/                    # 测试
+├── cli/           # kgqa 命令行入口
+├── config/        # Pydantic 配置模型和加载器
+├── document/      # 文档读取和 chunk 切分
+├── extraction/    # mock / LLM 抽取接口和校验
+├── graph_fusion/  # 实体归并、关系对齐、三元组评分
+├── graph_store/   # JSON 和 Neo4j 图存储
+├── community/     # 社区检测、报告生成、Neo4j 写入
+├── artifacts/     # parquet / JSON artifact 写入
+├── qa/            # graph-grounded QA 主路径
+├── query/         # 早期 GraphRAG query 原型
+└── tests/         # 单元和集成测试
 ```
 
-## 快速开始
+## Main Entry Points
 
-### 安装依赖
-
-```bash
-pip install -r requirements.txt
-```
-
-### 运行测试
-
-```bash
-python test_config.py
-```
-
-### 使用示例
+Python API：
 
 ```python
-from graphrag_v2 import GraphRagConfig, create_default_config, load_config
+from graphrag_v2.config import GraphRagConfig
+from graphrag_v2.indexing import index_fusion_only
+from graphrag_v2.qa import GraphGroundedQA
 
-# 创建默认配置
-config = create_default_config()
+# Indexing API is async because real extractors may call remote models.
+metadata = await index_fusion_only(
+    input_path="examples/docs",
+    output_path="artifacts/demo",
+    config=GraphRagConfig(),
+    extractor_name="mock",
+    graph_store_provider="json",
+)
 
-# 从文件加载配置
-config = load_config("settings.yaml")
-
-# 获取模型配置
-chat_model = config.get_language_model_config("default_chat_model")
-print(f"使用模型: {chat_model.model}")
+qa = GraphGroundedQA.from_index("artifacts/demo")
+result = qa.ask("GraphRAG 是什么？")
+print(result.answer)
 ```
 
-## 学习笔记
+CLI：
+
+```bash
+kgqa index examples/docs --output artifacts/demo
+kgqa ask "GraphRAG 是什么？" --index artifacts/demo
+kgqa inspect graph --index artifacts/demo
+```
 
-### 阶段1：配置系统重构 ✅
+## Indexing Modes
 
-**完成时间**: 2025-10-16
-**详细总结**: 见 [PHASE1_SUMMARY.md](PHASE1_SUMMARY.md)
+`kgqa index` 默认运行完整离线闭环：
 
-#### 关键学习点
+```bash
+kgqa index examples/docs --output artifacts/demo
+```
 
-1. **使用 Pydantic BaseModel**
-   - 类型安全的配置管理
-   - 自动验证和序列化
-   - 使用 `@model_validator` 和 `@field_validator`
+也可以按阶段调试：
+
+```bash
+kgqa index examples/docs --output artifacts/docs --mode documents-only
+kgqa index examples/docs --output artifacts/extraction --mode extraction-only
+kgqa index examples/docs --output artifacts/fusion --mode fusion-only
+```
 
-2. **分层配置结构**
-   - 主配置类 `GraphRagConfig`
-   - 子配置类（LLM、Storage、Chunking 等）
-   - 使用 `Field` 定义字段和默认值
+当前 CLI 支持 `mock` 和 `llm` extractor。`mock` 是稳定离线 demo 路径；`llm` 是严格真实 LLM 路径，当前 provider registry 默认使用 DeepSeek `deepseek-v4-flash`，并兼容 GLM/Zhipu、OpenAI-compatible、vLLM/local endpoint，已具备 JSON prompt、解析、repair retry、partial salvage、token/latency/cost metadata、请求节流、并发调度、预算保护、可选真实 LLM smoke 和最小 extraction eval。缺少可用真实客户端、API key 或 endpoint 时，`--extractor llm` 会明确失败，不会静默回退到 mock。
+
+## QA Behavior
+
+`graphrag_v2.qa` 的主入口是 `GraphGroundedQA`：
+
+- `QueryRouter` 判断 local / global 路由。
+- `EntityLinker` 将问题链接到图谱实体。
+- `GraphRetriever` 检索实体邻域和关系证据。
+- `CommunityRetriever` 检索社区报告证据。
+- `EvidenceRetriever` 追溯原文 chunk。
+- `MockAnswerer` 生成可测试回答。
+- `LLMAnswerer` 提供显式真实模型回答入口。
+
+CLI 输出固定为：
+
+```text
+Answer:
+Graph Evidence:
+Community Evidence:
+Citations:
+```
+
+`kgqa ask` 支持 `--format text|json` 和 `--answerer mock|llm`。JSON 输出包含 `answer`、`route`、
+`graph_evidence`、`community_evidence`、`citations`、`refused`、
+`refusal_reason` 和 `metadata`。如果没有可追溯 source chunk evidence，QA
+会返回 refusal，而不是生成无引用答案。默认 answerer 是 `mock`；显式选择
+`llm` 时需要真实 LLM 配置，缺少可用模型客户端、API key 或 endpoint 会返回错误。
+
+QA JSON 保持稳定的顶层 contract。调试和审计细节放在 `metadata` 下，包括
+`answer_prompt_version` 和 `query_trace`；trace 包含 route、linked entities、
+retrieved relationships、retrieved communities 和 retrieved text chunks。trace
+不会包含 raw prompts、credentials、hidden reasoning 或完整 LLM response。
+
+## QA Evaluation
 
-3. **验证机制**
-   - 字段级验证：`@field_validator`
-   - 模型级验证：`@model_validator(mode="after")`
-   - 自定义验证方法
+基础离线 QA eval：
+
+```bash
+kgqa index examples/docs --output artifacts/demo
+scripts/evaluate_qa.py \
+  --index artifacts/demo \
+  --questions examples/eval/qa/questions.jsonl
+```
 
-4. **默认值管理**
-   - 集中在 `defaults.py` 中
-   - 使用 dataclass 定义
-   - 通过 `Field(default=...)` 引用
+默认输出 JSON report，也支持 `--format markdown --output artifacts/qa-eval.md`。
+当前指标包含 retrieval hit rate、entity/relationship recall、entity/relationship
+MRR、citation coverage、citation grounding rate、refusal accuracy、route accuracy
+和 latency。
 
-5. **环境变量支持**
-   - 使用 python-dotenv 加载 .env 文件
-   - 支持环境变量覆盖配置
-   - 灵活的配置管理
+P6 QA gate 可以通过阈值参数让 release verification 明确失败：
 
-#### 实现的功能
+```bash
+scripts/evaluate_qa.py \
+  --index artifacts/demo \
+  --questions examples/eval/qa/questions.jsonl \
+  --min-route-accuracy 1.0 \
+  --min-retrieval-hit-rate 1.0 \
+  --min-citation-coverage 1.0 \
+  --min-refusal-accuracy 1.0 \
+  --min-citation-grounding-rate 1.0
+```
 
-- ✅ 完整的配置模型类（6个）
-- ✅ 配置加载器（支持 YAML/JSON）
-- ✅ 环境变量覆盖
-- ✅ 配置验证机制
-- ✅ 配置模板和示例
-- ✅ 完整的测试套件
+## Metadata And Errors
 
----
+`index_metadata.json` 使用 `metadata_schema_version: 1`，并记录 `run_status`、
+run start/finish time、elapsed seconds、indexing mode、阶段计数、LLM/extraction
+metadata 和 graph store 写入统计。失败时会尽量记录 `run_error_type` 和脱敏后的
+`run_error_message`。
 
-### 阶段2：数据模型标准化 ✅
+- `run_events.jsonl` and `run_summary.json` record each indexing run with a
+  stable `run_id`, stage timings, counters, provider/model context, failed-stage
+  details, and redacted operational error messages.
 
-**完成时间**: 2025-10-16
-**详细总结**: 见 [PHASE2_SUMMARY.md](PHASE2_SUMMARY.md)
+CLI 约定：用户输入、配置、缺失文件和外部依赖错误返回 exit code `2`；未预期异常返回
+exit code `1`。stderr 不应包含 API key 或 Neo4j password。
 
-#### 关键学习点
+## Graph Stores
 
-1. **使用 dataclass**
-   - 简洁的数据类定义
-   - 自动生成 `__init__`、`__repr__` 等方法
-   - 完整的类型注解
+JSON graph store 是默认离线路径，适合 demo、测试和 CI：
 
-2. **继承层次结构**
-   - `Identified` → `Named` → 具体类
-   - 注意 dataclass 继承时的默认值问题
-   - 使用 `from_dict` 类方法创建对象
+```bash
+kgqa index examples/docs --output artifacts/demo --graph-store json
+```
 
-3. **Schema 常量**
-   - 集中定义所有列名
-   - 定义最终输出列的顺序
-   - 确保数据处理的一致性
+Neo4j 是生产路径。社区检测和报告写入当前要求 Neo4j：
 
-4. **数据转换**
-   - dataclass ↔ DataFrame 双向转换
-   - 处理列表和字典类型（JSON 序列化）
-   - 处理 NaN 值和字段过滤
+```bash
+export NEO4J_PASSWORD="your-password"
+kgqa index examples/docs \
+  --output artifacts/neo4j-demo \
+  --graph-store neo4j \
+  --community
 
-5. **数据验证**
-   - 单个对象验证
-   - 批量验证
-   - 返回详细的错误消息
+kgqa inspect graph --index artifacts/neo4j-demo --graph-store neo4j
+kgqa ask "Neo4j 在项目里起什么作用？" --index artifacts/neo4j-demo
+```
+
+Neo4j 数据按输出目录生成的 `index_id` 隔离。重跑同一个输出目录会替换该
+index scope，不会删除其他索引或外部 Neo4j 数据。非默认 Neo4j 连接参数通过
+`kgqa init --output settings.yaml` 生成配置后传入 `--config settings.yaml`。
+生产索引建议同时传入 `--strict-neo4j`，这样会在写入前检查 Neo4j 连接和 schema
+路径，Neo4j 不可用时直接失败并写入失败 metadata，不会生成看起来成功的生产索引。
+默认 `staged_replace_on_write: true` 时，同一 `index_id` 的重建会先写入 staging
+index，全部写入成功后才 promote；失败时保留上一版成功索引。Neo4j 写入会自动确保
+KGQA constraints 和 indexes 存在；`kgqa inspect graph` 会输出 `health_status`、
+`schema_version`、`schema_ready`、expected/missing schema names、database、
+counts、`metadata_path`、`write_strategy` 和 `staging_index_id`。这些字段也会写入
+`index_metadata.json` 的 `graph_store_*` metadata。
+
+Neo4j 运维以 database 备份和 `index_id` 隔离为边界：备份/恢复使用 Neo4j 官方工具，
+恢复后用 `kgqa inspect graph --graph-store neo4j` 核对 schema 和 counts；重建同一
+输出目录使用 `kgqa index ... --graph-store neo4j --strict-neo4j`；清理旧 index id
+目前需要在确认不再使用后通过 Neo4j 维护查询按 `index_id` 删除。
 
-#### 实现的功能
+## Development
 
-- ✅ 核心数据类（9个）
-- ✅ Schema 常量定义
-- ✅ 数据转换工具（14个函数）
-- ✅ 数据验证工具（14个函数）
-- ✅ 完整的测试套件
+安装：
 
----
+```bash
+python -m pip install -e ".[dev]"
+```
 
-### 阶段3：索引 Pipeline 重构（基础版本）✅
+运行测试：
 
-**完成时间**: 2025-10-16
-**详细总结**: 见 [PHASE3_SUMMARY.md](PHASE3_SUMMARY.md)
+```bash
+python -m pytest graphrag_v2/tests -q
+```
 
-#### 关键学习点
+发布前离线验证：
 
-1. **Pipeline 架构**
-   - Pipeline 是工作流的有序集合
-   - Workflow 是 (名称, 函数) 的元组
-   - 统一的工作流函数签名
+```bash
+scripts/verify_release.sh
+```
 
-2. **运行上下文**
-   - 所有工作流共享同一个上下文
-   - 通过存储抽象实现数据传递
-   - 支持统计信息、缓存、回调
+该脚本会清空 Neo4j 连接环境变量，不会启用真实 LLM smoke。
+它会运行 `python scripts/security_check.py`、offline JSON demo、基础 QA eval、
+`kgqa inspect run` 和完整测试。
 
-3. **异步编程**
-   - 使用 async/await 模式
-   - 异步生成器返回结果
-   - 支持并发执行
+本地 Docker CLI 验证：
 
-4. **工厂模式**
-   - 集中管理所有工作流
-   - 支持自定义工作流注册
-   - 灵活的 Pipeline 组合
-
-5. **文本分块**
-   - 使用 tiktoken 进行基于 token 的分块
-   - 支持可配置的块大小和重叠
-   - 生成唯一的文本单元 ID
-
-#### 实现的功能
+```bash
+docker build -t openfusion-kgqa:0.2.0-beta.1 .
+docker run --rm -v "$PWD:/workspace" openfusion-kgqa:0.2.0-beta.1 --help
+```
 
-- ✅ Pipeline 核心模块（5个文件）
-- ✅ 工作流实现（2个工作流）
-- ✅ Pipeline 工厂和运行器
-- ✅ 存储和缓存抽象
-- ✅ 回调机制
-- ✅ 完整的测试套件
-
----
-
-### 阶段3扩展1：实体提取和社区检测 ✅
-
-**完成时间**: 2025-10-16
-**详细总结**: 见 [PHASE3_EXTENDED_SUMMARY.md](PHASE3_EXTENDED_SUMMARY.md)
-
-#### 新增工作流
-
-1. **实体提取工作流** (`extract_graph.py`)
-   - 使用规则提取实体和关系
-   - 支持中英文实体识别
-   - 自动合并重复实体
-   - 计算实体和关系排名
-
-2. **社区检测工作流** (`create_communities.py`)
-   - 使用 Louvain 算法检测社区
-   - 处理不连通图
-   - 计算社区统计信息
-   - 生成 NetworkX 图对象
-
-#### 测试结果
-
-使用 15 行测试文本，成功提取：
-- ✅ 60 个唯一实体
-- ✅ 174 个唯一关系
-- ✅ 5 个社区
-- ✅ 平均社区大小: 12.00
-- ✅ 运行时间: 0.29秒
-
----
-
-### 阶段3扩展2：社区报告和嵌入生成 ✅
-
-**完成时间**: 2025-10-16
-**详细总结**: 见 [PHASE3_FINAL_SUMMARY.md](PHASE3_FINAL_SUMMARY.md)
+docker-compose Neo4j 本地 smoke 见仓库根目录 [DEPLOYMENT.md](../DEPLOYMENT.md)。
 
-#### 新增工作流
-
-3. **社区报告生成工作流** (`create_community_reports.py`)
-   - 为每个社区生成标题、摘要和完整内容
-   - 计算社区排名（基于大小、密度、平均度）
-   - 生成关键发现（最重要实体、最强关系、主导类型）
-   - 支持 Markdown 格式输出
-
-4. **文本嵌入生成工作流** (`generate_embeddings.py`)
-   - 为文本单元和实体生成向量嵌入
-   - 使用 mock 嵌入（确定性哈希，1536维）
-   - 支持相似度搜索（余弦相似度）
-   - 支持 top-k 检索
-
-#### 完整 Pipeline 测试结果
-
-使用 30 行测试文本，成功完成：
-- ✅ 109 个唯一实体
-- ✅ 257 个唯一关系
-- ✅ 21 个社区
-- ✅ 21 个社区报告
-- ✅ 110 个嵌入向量（1 文本单元 + 109 实体）
-- ✅ 嵌入相似度搜索测试通过
-- ✅ 总运行时间: 0.43秒
-
-#### 实现的功能
-
-- ✅ 完整的 6 个工作流 Pipeline
-- ✅ 社区报告生成（规则版本）
-- ✅ 文本嵌入生成（mock 版本）
-- ✅ 嵌入相似度搜索
-- ✅ 完整的端到端测试（`test_full_pipeline.py`）
-- ✅ 详细的日志记录和统计信息
-
----
-
-### 阶段4：查询引擎优化 ✅
-
-**完成时间**: 2025-10-16
-**详细总结**: 见 [PHASE4_SUMMARY.md](PHASE4_SUMMARY.md)
-
-#### 实现的功能
-
-1. **查询基础模块** (`query/base.py`, `query/context_builder.py`)
-   - BaseSearch: 搜索引擎基类
-   - SearchResult: 搜索结果数据类
-   - ContextBuilder: 上下文构建器基类
-   - GlobalContextBuilder 和 LocalContextBuilder
-
-2. **Global Search** (`query/global_search.py`, `query/global_context_builder.py`)
-   - 使用 Map-Reduce 模式
-   - Map 阶段：对每批社区报告并行生成中间答案
-   - Reduce 阶段：合并中间答案生成最终答案
-   - CommunityContextBuilder: 基于社区报告的上下文构建器
-
-3. **Local Search** (`query/local_search.py`, `query/local_context_builder.py`)
-   - 基于向量相似度检索
-   - 使用查询嵌入找到最相关的实体
-   - 获取相关的关系和社区
-   - EntityRelationshipContextBuilder: 基于实体和关系的上下文构建器
-
-#### 测试结果
-
-**Global Search**:
-- ✅ 查询: "总结整个数据集的主要主题"
-- ✅ Map 响应数: 2
-- ✅ LLM 调用次数: 3
-- ✅ 完成时间: 0.00 秒
-
-**Local Search**:
-- ✅ 查询: "GraphRAG 是什么？"
-- ✅ 相关实体数: 3
-- ✅ 相关关系数: 4
-- ✅ 完成时间: 0.00 秒
-
-#### 关键学习点
-
-1. **Global Search vs Local Search**
-   - Global: 全局视角，Map-Reduce 模式，适合总结性问题
-   - Local: 局部细节，向量检索，适合具体问题
-
-2. **Map-Reduce 模式**
-   - Map: 并行处理数据批次
-   - Reduce: 合并中间结果
-   - 使用 asyncio.gather 实现并发
-
-3. **向量相似度检索**
-   - 生成查询嵌入
-   - 计算余弦相似度
-   - Top-K 检索最相关实体
-
-4. **上下文构建策略**
-   - Global: 分批社区报告
-   - Local: 实体 + 关系 + 社区的多层次上下文
-
-### 阶段5：Prompt 工程优化（2025-10-16）
-
-#### 实现内容
-
-**1. Prompt 模板系统** (`prompts/base.py`)
-- ✅ PromptTemplate 类：支持变量替换、默认值、条件渲染
-- ✅ PromptLibrary 类：集中管理多个 Prompt 模板
-
-**2. 实体提取 Prompt** (`prompts/entity_extraction.py`)
-- ✅ 完全中文化的 Prompt 模板
-- ✅ 3 个高质量 Few-shot 示例（科技公司、商业新闻、国际新闻）
-- ✅ 结构化输出格式（使用分隔符）
-- ✅ 支持自定义实体类型
-
-**3. 社区报告 Prompt** (`prompts/community_report.py`)
-- ✅ 角色扮演式 Prompt
-- ✅ JSON 格式输出（标题、摘要、评分、发现）
-- ✅ 数据引用要求
-- ✅ 长度控制
-
-**4. 查询 Prompt** (`prompts/query_prompts.py`)
-- ✅ Global Search Map Prompt（提取关键点）
-- ✅ Global Search Reduce Prompt（综合答案）
-- ✅ Local Search Prompt（详细回答）
-
-**5. GLM 客户端** (`llm/glm_client.py`)
-- ✅ 智谱 AI GLM-4 集成
-- ✅ 自动降级到 mock 模式（无 API key 时）
-- ✅ 重试机制（默认 3 次）
-- ✅ 统计跟踪（调用次数、Token 数、错误次数）
-- ✅ 智能 mock 响应（为每种 Prompt 类型提供合适的响应）
-
-#### 测试结果
-
-**测试 1: 实体提取**
-- ✅ Prompt 长度: 1027 字符
-- ✅ 提取到 2 个实体
-- ✅ 提取到 1 个关系
-
-**测试 2: 社区报告**
-- ✅ Prompt 长度: 3804 字符
-- ✅ JSON 格式正确
-- ✅ 包含标题、评分、发现
-
-**测试 3: Global Search**
-- ✅ Map 和 Reduce 阶段都正常
-- ✅ 响应格式正确
-
-**测试 4: Local Search**
-- ✅ Prompt 长度: 1315 字符
-- ✅ 响应格式正确
-
-#### 关键学习点
-
-1. **Prompt 工程最佳实践**
-   - 清晰的角色定义："你是一个..."
-   - 明确的目标："生成一个..."
-   - 分步骤指导："1. 识别... 2. 提取..."
-   - Few-shot 示例：提供 2-3 个高质量示例
-   - 结构化输出：使用分隔符或 JSON 格式
-   - 数据引用：要求引用数据源
-   - 长度控制：限制响应长度
-
-2. **GLM-4 vs OpenAI**
-   - GLM-4 对中文的理解和生成能力更强
-   - API 接口与 OpenAI 类似，易于迁移
-   - 成本更低，服务更稳定（国内）
-
-3. **Mock 模式的价值**
-   - 无需 API key 即可开发和测试
-   - 避免频繁调用 API 产生费用
-   - 加速开发和测试流程
-   - 支持离线开发
-
-4. **中文优化策略**
-   - 完全中文化的 Prompt 和示例
-   - 使用中文实体类型（"组织"、"人物"）
-   - 要求以中文返回结果
-   - 中文场景的 Few-shot 示例
-
-## 参考资料
-
-- 微软 GraphRAG: `../graphrag-main/`
-- 重构计划: `../graphrag_fixed/REFACTOR_PLAN.md`
-- 智谱 AI 文档: https://open.bigmodel.cn/
+只跑 KGQA 集成测试：
 
+```bash
+python -m pytest graphrag_v2/tests/integration/test_kgqa_pipeline.py -q
+```
+
+需要本地 Neo4j 的生产路径验证：
+
+```bash
+scripts/start_fresh_neo4j.sh
+source "$(ls -td ~/.local/share/kgqa-neo4j-openfusion-*/kgqa-neo4j.env | head -1)"
+
+python -m pytest graphrag_v2/tests/integration/test_neo4j_store.py \
+  graphrag_v2/tests/integration/test_community_pipeline.py -q
+```
+
+端到端 Neo4j demo：
+
+```bash
+cp settings.neo4j.example.yaml settings.local.yaml
+kgqa index examples/docs \
+  --output artifacts/neo4j-demo \
+  --config settings.local.yaml \
+  --graph-store neo4j \
+  --community
+kgqa inspect graph --index artifacts/neo4j-demo --config settings.local.yaml --graph-store neo4j
+kgqa ask "Neo4j 在项目里起什么作用？" --index artifacts/neo4j-demo --config settings.local.yaml
+```
+
+真实 LLM + Neo4j smoke 需要显式开关。默认 provider/model 是
+DeepSeek `deepseek-v4-flash`：
+
+```bash
+source "$(ls -td ~/.local/share/kgqa-neo4j-openfusion-*/kgqa-neo4j.env | head -1)"
+export KGQA_REAL_LLM_SMOKE=1
+export KGQA_REAL_LLM_CONFIG=settings.local.real-llm.yaml
+
+cp settings.llm.neo4j.example.yaml settings.local.real-llm.yaml
+# 在 settings.local.real-llm.yaml 中填写 models.default_chat_model.api_key。
+python -m pytest graphrag_v2/tests/integration/test_real_llm_smoke.py -q
+
+kgqa index examples/docs \
+  --output artifacts/llm-neo4j-smoke \
+  --config "$KGQA_REAL_LLM_CONFIG" \
+  --extractor llm \
+  --graph-store neo4j \
+  --community
+scripts/evaluate_extraction.py --index artifacts/llm-neo4j-smoke --expected examples/eval/expected_graph.json
+```
+
+要切换其他 OpenAI-compatible provider，修改
+`settings.local.real-llm.yaml` 中的 `model_provider`、`model`、`api_base`
+和 `api_key`。`KGQA_REAL_LLM_PROVIDER`、`KGQA_REAL_LLM_MODEL`、
+`KGQA_REAL_LLM_API_BASE` 和 `KGQA_REAL_LLM_API_KEY` 仍可作为临时覆盖；
+Legacy GLM 仍可用 `model_provider: zhipu` / `llm_provider: glm` 显式启用。
+
+基础 QA eval：
+
+```bash
+scripts/evaluate_qa.py --index artifacts/demo --questions examples/eval/qa/questions.jsonl
+```
+
+当前测试基线（默认离线测试，未启用真实 LLM smoke）：`459 passed, 4 skipped`。
+
+完整交接指南见 [docs/operator_guide.md](../docs/operator_guide.md)。安全/治理 gate 可单独运行：
+
+```bash
+python scripts/security_check.py
+```
+
+## Compatibility Notes
+
+- `query/` 中仍保留早期 GraphRAG query 原型，但新产品入口是 `qa/` 和 `kgqa ask`。
+- 默认 demo 不依赖 API key。`--extractor llm` 和 `--answerer llm` 都要求真实 LLM 配置；真实 LLM smoke 仅在显式环境变量和可用凭据/endpoint 存在时运行。

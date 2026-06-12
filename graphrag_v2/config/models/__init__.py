@@ -5,6 +5,10 @@
 
 from graphrag_v2.config.models.cache_config import CacheConfig
 from graphrag_v2.config.models.chunking_config import ChunkingConfig
+from graphrag_v2.config.models.community_config import CommunityConfig
+from graphrag_v2.config.models.extraction_config import ExtractionConfig
+from graphrag_v2.config.models.fusion_config import FusionConfig
+from graphrag_v2.config.models.graph_store_config import GraphStoreConfig
 from graphrag_v2.config.models.graph_rag_config import GraphRagConfig
 from graphrag_v2.config.models.input_config import InputConfig
 from graphrag_v2.config.models.language_model_config import LanguageModelConfig
@@ -13,9 +17,12 @@ from graphrag_v2.config.models.storage_config import StorageConfig
 __all__ = [
     "CacheConfig",
     "ChunkingConfig",
+    "CommunityConfig",
+    "ExtractionConfig",
+    "FusionConfig",
+    "GraphStoreConfig",
     "GraphRagConfig",
     "InputConfig",
     "LanguageModelConfig",
     "StorageConfig",
 ]
-
